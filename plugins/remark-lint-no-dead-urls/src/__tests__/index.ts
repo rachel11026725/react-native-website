@@ -25,6 +25,18 @@ function processMarkdown(md: string, opts: Options = {}) {
   return remark().use(plugin, opts).process(md);
 }
 
+function createNotFoundError(url: string) {
+  return new RequestError(
+    'Request failed',
+    {code: 'ENOTFOUND'} as Error & {code: string},
+    {options: {}, requestUrl: url, retryCount: 0} as {
+      options: object;
+      requestUrl: string;
+      retryCount: number;
+    }
+  );
+}
+
 describe('remark-lint-no-dead-urls', () => {
   beforeEach(() => mockFetch.mockReset());
 
@@ -177,17 +189,7 @@ describe('remark-lint-no-dead-urls', () => {
   });
 
   test('reports domain-not-found links', async () => {
-    const notFoundError = new RequestError(
-      'Request failed',
-      {code: 'ENOTFOUND'} as Error & {code: string},
-      {options: {}, requestUrl: 'https://example.com', retryCount: 0} as {
-        options: object;
-        requestUrl: string;
-        retryCount: number;
-      }
-    ) as RequestError & {
-      code: string;
-    };
+    const notFoundError = createNotFoundError('https://example.com');
     mockFetch
       .mockRejectedValueOnce(notFoundError)
       .mockRejectedValueOnce(notFoundError);
