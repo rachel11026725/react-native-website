@@ -7,6 +7,7 @@
 
 import {remark} from 'remark';
 import dedent from 'dedent';
+import {RequestError} from 'got';
 import {jest, describe, beforeEach, test, expect} from '@jest/globals';
 import {Options} from '../index.ts';
 
@@ -148,5 +149,85 @@ describe('remark-lint-no-dead-urls', () => {
 
     const vFile = await lint;
     expect(vFile.messages.length).toBe(0);
+  });
+
+  test('accepts 302 redirect responses', async () => {
+    mockFetch.mockResolvedValueOnce(302);
+
+    const lint = processMarkdown(
+      '[redirect](https://example.com/redirect-case)'
+    );
+    const vFile = await lint;
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(vFile.messages.length).toBe(0);
+  });
+
+  test('reports rate-limited links', async () => {
+    mockFetch.mockResolvedValueOnce(429);
+
+    const lint = processMarkdown('[limited](https://example.com/rate-limited)');
+    const vFile = await lint;
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(vFile.messages.length).toBe(1);
+    expect(vFile.messages[0].reason).toBe(
+      'Link to https://example.com/rate-limited is being rate limited'
+    );
+  });
+
+  test('reports domain-not-found links', async () => {
+    const notFoundError = new RequestError(
+      'Request failed',
+      {code: 'ENOTFOUND'} as Error & {code: string},
+      {options: {}, requestUrl: 'https://example.com', retryCount: 0} as {
+        options: object;
+        requestUrl: string;
+        retryCount: number;
+      }
+    ) as RequestError & {
+      code: string;
+    };
+    mockFetch
+      .mockRejectedValueOnce(notFoundError)
+      .mockRejectedValueOnce(notFoundError);
+
+    const lint = processMarkdown(
+      '[missing](https://example.com/domain-missing)'
+    );
+    const vFile = await lint;
+
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(vFile.messages.length).toBe(1);
+    expect(vFile.messages[0].reason).toBe(
+      'Link to https://example.com/domain-missing is broken, domain not found'
+    );
+  });
+
+  test('does not check relative paths without baseUrl', async () => {
+    const lint = processMarkdown('[local page](/docs/testing)');
+    const vFile = await lint;
+
+    expect(mockFetch).toHaveBeenCalledTimes(0);
+    expect(vFile.messages.length).toBe(0);
+  });
+
+  test('checks duplicate URLs once but reports each broken instance', async () => {
+    mockFetch.mockResolvedValueOnce(404);
+
+    const lint = processMarkdown(dedent`
+      [first](https://example.com/same-broken-url)
+      [second](https://example.com/same-broken-url)
+    `);
+    const vFile = await lint;
+
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(vFile.messages.length).toBe(2);
+    expect(vFile.messages[0].reason).toBe(
+      'Link to https://example.com/same-broken-url is broken'
+    );
+    expect(vFile.messages[1].reason).toBe(
+      'Link to https://example.com/same-broken-url is broken'
+    );
   });
 });
