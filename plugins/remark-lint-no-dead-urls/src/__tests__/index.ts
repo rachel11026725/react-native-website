@@ -136,6 +136,42 @@ describe('remark-lint-no-dead-urls', () => {
     expect(vFile.messages.length).toBe(0);
   });
 
+  test('treats URL with %2F-encoded slash as valid when the decoded URL succeeds', async () => {
+    mockFetch.mockResolvedValueOnce(200);
+
+    const lint = processMarkdown(dedent`
+      # Title
+
+      Here is a [link with encoded slash](https://github.com/apple/python-apple-fm-sdk/blob/main/examples%2Fstreaming_example.py).
+    `);
+
+    const vFile = await lint;
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://github.com/apple/python-apple-fm-sdk/blob/main/examples/streaming_example.py',
+      expect.anything(),
+      expect.anything()
+    );
+    expect(vFile.messages.length).toBe(0);
+  });
+
+  test('reports broken link for URL with %2F-encoded slash when the decoded URL returns 404', async () => {
+    mockFetch.mockResolvedValueOnce(404);
+
+    const lint = processMarkdown(dedent`
+      # Title
+
+      Here is a [broken link with encoded slash](https://github.com/apple/python-apple-fm-sdk/blob/main/examples%2Fmissing.py).
+    `);
+
+    const vFile = await lint;
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(vFile.messages.length).toBe(1);
+    expect(vFile.messages[0].reason).toBe(
+      'Link to https://github.com/apple/python-apple-fm-sdk/blob/main/examples%2Fmissing.py is broken'
+    );
+  });
+
   test.each([
     '[Ignore this](http://www.url-to-ignore.com)',
     '[Ignore this](http://www.url-to-ignore.com/somePath)',

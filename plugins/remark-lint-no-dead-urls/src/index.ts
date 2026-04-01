@@ -44,7 +44,15 @@ async function cacheFetch(urlOrPath: string, method: Method, options: Options) {
   }
 
   const {baseUrl, ...other} = options;
-  const url = new URL(urlOrPath, baseUrl).toString();
+  // Decode %2F (percent-encoded forward slash) in URLs before fetching.
+  // Unlike other percent-encoded characters, %2F changes path routing: servers
+  // such as GitHub return 404 for paths containing a literal %2F because they
+  // treat it as a path component rather than a separator. We only decode %2F
+  // here (rather than using decodeURIComponent on the whole URL) to avoid
+  // throwing on malformed percent-sequences and to leave other encoded
+  // characters intact.
+  const normalizedUrlOrPath = urlOrPath.replace(/%2F/gi, '/');
+  const url = new URL(normalizedUrlOrPath, baseUrl).toString();
 
   const code = await fetch(url, method, other);
 
