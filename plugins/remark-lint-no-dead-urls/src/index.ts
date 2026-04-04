@@ -85,7 +85,7 @@ async function noDeadUrls(ast: MDASTNode, file: VFile, options: Options) {
     if (
       !url ||
       uri.isLocalhost(url) ||
-      skipUrlPatterns?.some(skipPattern => new RegExp(skipPattern).test(url))
+      skipUrlPatterns?.some(skipPattern => skipPattern.test(url))
     ) {
       return;
     }
