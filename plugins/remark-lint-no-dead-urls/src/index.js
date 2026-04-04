@@ -74,7 +74,7 @@ async function noDeadUrls(ast, file, options = {}) {
     if (
       !url ||
       uri.isLocalhost(url) ||
-      skipUrlPatterns?.some(skipPattern => new RegExp(skipPattern).test(url))
+      skipUrlPatterns?.some(skipPattern => skipPattern.test(url))
     ) {
       return;
     }
