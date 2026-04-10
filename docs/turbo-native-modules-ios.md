@@ -132,18 +132,17 @@ Modify the `package.json` as it follows:
      "test": "jest"
    },
    "codegenConfig": {
-     "name": "NativeLocalStorageSpec",
+     "name": "AppSpecs",
      "type": "modules",
      "jsSrcsDir": "specs",
      "android": {
-       "javaPackageName": "com.nativelocalstorage"
-     },
+       "javaPackageName": "com.sampleapp.specs"
+     }
      // highlight-add-start
-     "ios": {
+     "ios":
         "modulesProvider": {
           "NativeLocalStorage": "RCTNativeLocalStorage"
         }
-     }
      // highlight-add-end
    },
 
@@ -155,6 +154,7 @@ At this point, you need to re-install the pods to make sure that codegen runs ag
 ```bash
 # from the ios folder
 bundle exec pod install
+open SampleApp.xcworkspace
 open TurboModuleExample.xcworkspace
 ```
 

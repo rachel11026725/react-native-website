@@ -333,6 +333,10 @@ The ModuleProvider is an Objective-C++ that glues together the Pure C++ module w
 
 1. From Xcode, select the `SampleApp` project and press <kbd>⌘</kbd> + <kbd>N</kbd> to create a new file.
 2. Select the `Cocoa Touch Class` template
+3. Add the name `SampleNativeModuleProvider` (keep the other field as `Subclass of: NSObject` and `Language: Objective-C`)
+4. Click Next to generate the files.
+5. Rename the `SampleNativeModuleProvider.m` to `SampleNativeModuleProvider.mm`. The `mm` extension denotes an Objective-C++ file.
+6. Implement the content of the `SampleNativeModuleProvider.h` with the following:
 3. Add the name `NativeSampleModuleProvider` (keep the other field as `Subclass of: NSObject` and `Language: Objective-C`)
 4. Click Next to generate the files.
 5. Rename the `NativeSampleModuleProvider.m` to `NativeSampleModuleProvider.mm`. The `mm` extension denotes an Objective-C++ file.
@@ -372,13 +376,37 @@ This declares a `NativeSampleModuleProvider` object that conforms to the `RCTMod
 }
 
 @end
+
+NS_ASSUME_NONNULL_END
+```
+
+This declares a `NativeSampleModuleProvider` object that conforms to the `RCTModuleProvider` protocol.
+
+7. Implement the content of the `SampleNativeModuleProvider.mm` with the following:
+
+```objc title="NativeSampleModuleProvider.mm"
+
+#import "NativeSampleModuleProvider.h"
+#import <ReactCommon/CallInvoker.h>
+#import <ReactCommon/TurboModule.h>
+#import "NativeSampleModule.h"
+
+@implementation NativeSampleModuleProvider
+
+- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:
+    (const facebook::react::ObjCTurboModule::InitParams &)params
+{
+  return std::make_shared<facebook::react::NativeSampleModule>(params.jsInvoker);
+}
+
+@end
 ```
 
 This code implements the `RCTModuleProvider` protocol by creating the pure C++ `NativeSampleModule` when the `getTurboModule:` method is called.
 
 ##### 3.2 Update the package.json
 
-The last step consists in updating the `package.json` to tell React Native about the link between the JS specs of the Native Module and the concrete implementation of those spec in native code.
+The last step consist in updating the `package.json` to tell React Native about the link between the JS specs of the Native Module and the concrete implementation of those spec in native code.
 
 Modify the `package.json` as it follows:
 
@@ -392,13 +420,12 @@ Modify the `package.json` as it follows:
      "jsSrcsDir": "specs",
      "android": {
        "javaPackageName": "com.sampleapp.specs"
+     }
      // highlight-add-start
-     },
-     "ios": {
+     "ios":
         "modulesProvider": {
           "NativeSampleModule":  "NativeSampleModuleProvider"
         }
-     }
      // highlight-add-end
    },
 
