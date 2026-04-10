@@ -7,9 +7,9 @@ export default {
       {
         skipUrlPatterns: [
           // False positive, flagged as a bot and rate limited
-          "www.apkfiles.com",
+          /www\.apkfiles\.com/,
           // TODO: replace the 2048 example repository with another suitable project
-          "github.com/JoelMarcey",
+          /github\.com\/JoelMarcey/,
         ],
         baseUrl: "https://reactnative.dev/docs",
         headers: {
