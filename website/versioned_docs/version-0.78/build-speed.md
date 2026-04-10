@@ -50,6 +50,26 @@ reactNativeArchitectures=armeabi-v7a,arm64-v8a,x86,x86_64
 
 Once you build a **release version** of your app, don't forget to remove those flags as you want to build an apk/app bundle that works for all the ABIs and not only for the one you're using in your daily development workflow.
 
+## Using a Maven Mirror (Android-only)
+
+When building Android apps, your Gradle builds will need to download the necessary dependencies from Maven Central and other repositories from the internet.
+
+If your organization is running a Maven repository mirror, you should consider using as it will speed up your build, by downloading the artifacts from the mirror rather than from the internet.
+
+You can configure a mirror by specifying the `exclusiveEnterpriseRepository` property in your `android/gradle.properties` file:
+
+```diff
+# Use this property to enable or disable the Hermes JS engine.
+# If set to false, you will be using JSC instead.
+hermesEnabled=true
+
+# Use this property to configure a Maven enterprise repository
+# that will be used exclusively to fetch all of your dependencies.
++exclusiveEnterpriseRepository=https://my.internal.proxy.net/
+```
+
+By setting this property, your build will fetch dependencies **exclusively** from your specified repository and not from others.
+
 ## Use a compiler cache
 
 If you're running frequent native builds (either C++ or Objective-C), you might benefit from using a **compiler cache**.
@@ -61,7 +81,7 @@ Specifically you can use two type of caches: local compiler caches and distribut
 :::info
 The following instructions will work for **both Android & iOS**.
 If you're building only Android apps, you should be good to go.
-If you're building also iOS apps, please follow the instructions in the [XCode Specific Setup](#xcode-specific-setup) section below.
+If you're building also iOS apps, please follow the instructions in the [Xcode Specific Setup](#xcode-specific-setup) section below.
 :::
 
 We suggest to use [**ccache**](https://ccache.dev/) to cache the compilation of your native builds.
@@ -94,9 +114,9 @@ Note that `ccache` aggregates the stats over all builds. You can use `ccache --z
 
 Should you need to wipe your cache, you can do so with `ccache --clear`
 
-#### XCode Specific Setup
+#### Xcode Specific Setup
 
-To make sure `ccache` works correctly with iOS and XCode, you need to enable React Native support for ccache in `ios/Podfile`.
+To make sure `ccache` works correctly with iOS and Xcode, you need to enable React Native support for ccache in `ios/Podfile`.
 
 Open `ios/Podfile` in your editor and uncomment the `ccache_enabled` line.
 

@@ -13,7 +13,7 @@ import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 const App = () => {
   return (
     <SafeAreaProvider>
-      <SafeAreaView>
+      <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.container}>
           <Text>OS</Text>
           <Text style={styles.value}>{Platform.OS}</Text>
@@ -47,6 +47,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     padding: 4,
     marginBottom: 8,
+  },
+  safeArea: {
+    flex: 1,
   },
 });
 
@@ -89,7 +92,7 @@ Returns an object which contains all available common and specific constants rel
 
 ---
 
-### `isPad` <div class="label ios">iOS</div>
+### `isPad` <div className="label ios">iOS</div>
 
 ```tsx
 static isPad: boolean;
@@ -191,10 +194,13 @@ Select method returns the most fitting value for the platform you are currently 
 
 The `config` parameter is an object with the following keys:
 
-- `android` (any)
-- `ios` (any)
-- `native` (any)
-- `default` (any)
+- `android`
+- `ios`
+- `macos` (only applicable when using [react-native-macos](https://github.com/microsoft/react-native-macos))
+- `native` (fallback for all platforms except for `web`)
+- `web` (only applicable when using [react-native-web](https://github.com/necolas/react-native-web))
+- `windows` (only applicable when using [react-native-windows](https://github.com/microsoft/react-native-windows))
+- `default` (fallback for all platforms)
 
 **Example usage:**
 
