@@ -142,6 +142,12 @@ The `src/theme` subdirectory contains the swizzled React components from the Doc
 
 The `showcase.json` file contains the list of users that are highlighted in the React Native showcase.
 
+### Social/share image
+
+The default social preview image for the website is configured in `website/docusaurus.config.ts` (`image`, `og:image`, and `twitter:image`) and currently points to `website/static/img/logo-share.png`.
+
+When updating this image, keep all important text and logos away from the edges (at least 40px of padding) so GitHub and social previews do not crop critical content.
+
 ## 👏 Contributing
 
 ### Create a branch
